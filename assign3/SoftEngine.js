@@ -449,11 +449,11 @@ var SoftEngine;
             var facept;
             var faceptIdx, midpt1Idx, midpt2Idx;
             var newFaces = new Array(0);
+            var newHalfEdges = new Array(0);
             for (var i = 0; i < mesh.halfEdges.length; i++) {
                 if (i % 4 == 0) {
                     faceptIdx = mesh.Vertices.length;
                     facept = newFacePoints[mesh.halfEdges[i].left];
-                    console.log(facept.Coordinates);
                     mesh.Vertices[faceptIdx] = {Coordinates: new BABYLON.Vector3(facept.Coordinates.x,
                                                                                  facept.Coordinates.y,
                                                                                  facept.Coordinates.z),
@@ -476,12 +476,52 @@ var SoftEngine;
                                                                             midPoints[mesh.halfEdges[i].prev].Normal.y,
                                                                             midPoints[mesh.halfEdges[i].prev].Normal.z)};
                 newFaces.push({A: faceptIdx, B: midpt1Idx, C: midpt2Idx, D: mesh.halfEdges[i].vert});
-                console.log(mesh.halfEdges[i].vert);
+                
 
-                // halfEdges[i].next =
+                newHalfEdges.push({
+                    vert: faceptIdx,
+                    prev: mesh.halfEdges[i+3],
+                    next: mesh.halfEdges[i+1],
+                    pair: null,
+                    left: newFaces.length
+                });
+                newHalfEdges.push({
+                    vert: midpt1Idx,
+                    prev: mesh.halfEdges[i],
+                    next: mesh.halfEdges[i+2],
+                    pair: null,
+                    left: newFaces.length
+                });
+                newHalfEdges.push({
+                    vert: mesh.halfEdges[i].vert,
+                    prev: mesh.halfEdges[i+1],
+                    next: mesh.halfEdges[i+3],
+                    pair: null,
+                    left: newFaces.length
+                });
+                newHalfEdges.push({
+                    vert: midpt1Idx,
+                    prev: mesh.halfEdges[i+2],
+                    next: mesh.halfEdges[i],
+                    pair: null,
+                    left: newFaces.length
+                });
+                //mesh.halfEdges = mesh.halfEdges.concat(newHalfEdges);
             }  
+            mesh.halfEdges = newHalfEdges;
+            debug(mesh.halfEdges);
+            for(var i = 0; i < mesh.halfEdges.length; i++) 
+            {
+                for(var j = 0; j < mesh.halfEdges.length; j++) 
+                {
+                    if (mesh.halfEdges[i].vert === mesh.halfEdges[mesh.halfEdges[j].next].vert &&
+                        mesh.halfEdges[mesh.halfEdges[i].next].vert === mesh.halfEdges[j].vert) 
+                    {
+                        mesh.halfEdges[i].pair = j;
+                    }
+                }
+            }
             mesh.Faces = newFaces;
-            console.log(mesh.Faces);
         }
         Device.prototype.render = function (camera, meshes, mode) {
             var viewMatrix = BABYLON.Matrix.LookAtLH(camera.Position, camera.Target, BABYLON.Vector3.Up());
