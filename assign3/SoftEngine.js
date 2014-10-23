@@ -480,36 +480,36 @@ var SoftEngine;
 
                 newHalfEdges.push({
                     vert: faceptIdx,
-                    prev: mesh.halfEdges[i+3],
-                    next: mesh.halfEdges[i+1],
+                    prev: i+3,
+                    next: i+1,
+                    pair: null,
+                    left: newFaces.length
+                });
+                newHalfEdges.push({
+                    vert: midpt2Idx,
+                    prev: i,
+                    next: i+2,
+                    pair: null,
+                    left: newFaces.length
+                });
+                newHalfEdges.push({
+                    vert: i.vert,
+                    prev: i+1,
+                    next: i+3,
                     pair: null,
                     left: newFaces.length
                 });
                 newHalfEdges.push({
                     vert: midpt1Idx,
-                    prev: mesh.halfEdges[i],
-                    next: mesh.halfEdges[i+2],
-                    pair: null,
-                    left: newFaces.length
-                });
-                newHalfEdges.push({
-                    vert: mesh.halfEdges[i].vert,
-                    prev: mesh.halfEdges[i+1],
-                    next: mesh.halfEdges[i+3],
-                    pair: null,
-                    left: newFaces.length
-                });
-                newHalfEdges.push({
-                    vert: midpt1Idx,
-                    prev: mesh.halfEdges[i+2],
-                    next: mesh.halfEdges[i],
+                    prev: i+2,
+                    next: i,
                     pair: null,
                     left: newFaces.length
                 });
                 //mesh.halfEdges = mesh.halfEdges.concat(newHalfEdges);
             }  
             mesh.halfEdges = newHalfEdges;
-            debug(mesh.halfEdges);
+            
             for(var i = 0; i < mesh.halfEdges.length; i++) 
             {
                 for(var j = 0; j < mesh.halfEdges.length; j++) 
@@ -521,6 +521,7 @@ var SoftEngine;
                     }
                 }
             }
+            debug(mesh.halfEdges);
             mesh.Faces = newFaces;
         }
         Device.prototype.render = function (camera, meshes, mode) {
