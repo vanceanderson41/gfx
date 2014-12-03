@@ -46,6 +46,7 @@ var SoftEngine;
             this.mode = 0;
             this.count = 0;
             this.lightPos = new BABYLON.Vector3(0, 5, 10);
+            this.digits = 15;
         }
         Device.prototype.clear = function () {
             this.workingContext.clearRect(0, 0, this.workingWidth, this.workingHeight);
@@ -330,6 +331,7 @@ var SoftEngine;
             }
         };
         Device.prototype.catclarkSubDev = function(mesh, state) {
+            var temp01 = Math.pow(10, this.digits);
             var newFacePoints = new Array(mesh.Faces.length);
             // FACE POINTS - shares indices with faces
             for (var i = 0; i < mesh.Faces.length; i++) {
@@ -398,6 +400,9 @@ var SoftEngine;
                 midPoints[i] = {Coordinates : new BABYLON.Vector3(newVert.x, newVert.y, newVert.z),
                                  Normal: new BABYLON.Vector3(newNorm.x, newNorm.y, newNorm.z)
                                 };
+                midPoints[i].Coordinates.x = Math.round(midPoints[i].Coordinates.x * temp01) / temp01;
+                midPoints[i].Coordinates.y = Math.round(midPoints[i].Coordinates.y * temp01) / temp01;
+                midPoints[i].Coordinates.z = Math.round(midPoints[i].Coordinates.z * temp01) / temp01;
             }
 
             // move existing points
@@ -407,6 +412,7 @@ var SoftEngine;
                 var facePtAvg = new BABYLON.Vector3(0,0,0);
                 var faceNorAvg = new BABYLON.Vector3(0,0,0);
                 var valence = 0;
+
                 for(var j = 0; j < mesh.Faces.length; j++) {
                     if (mesh.Faces[j].A == i || mesh.Faces[j].B == i || mesh.Faces[j].C == i || mesh.Faces[j].D == i) {
                         facePtAvg.x += newFacePoints[j].Coordinates.x;
@@ -431,20 +437,33 @@ var SoftEngine;
                         midNorAvg.z += midPoints[j].Normal.z;
                     }
                 }
-                valence = valence * 2;
-                mesh.Vertices[i].Coordinates.x = ((valence/2-3)*mesh.Vertices[i].Coordinates.x / valence) +
-                                                 (midPtAvg.x / (valence/2)) + (facePtAvg.x / valence);
-                mesh.Vertices[i].Coordinates.y = ((valence/2-3)*mesh.Vertices[i].Coordinates.y / valence) +
-                                                 (midPtAvg.y / (valence/2)) + (facePtAvg.y / valence);
-                mesh.Vertices[i].Coordinates.z = ((valence/2-3)*mesh.Vertices[i].Coordinates.z / valence) +
-                                                 (midPtAvg.z / (valence/2)) + (facePtAvg.z / valence);
-                mesh.Vertices[i].Normal.x = (0*mesh.Vertices[i].Normal.x / valence) +
-                                                 (midPtAvg.x / (valence/2)) + (facePtAvg.x / valence);
-                mesh.Vertices[i].Normal.y = (0*mesh.Vertices[i].Normal.y / valence) +
-                                                 (midPtAvg.y / (valence/2)) + (facePtAvg.y / valence);
-                mesh.Vertices[i].Normal.z = (0*mesh.Vertices[i].Normal.z / valence) +
-                                                 (midPtAvg.z / (valence/2)) + (facePtAvg.z / valence);
+                var divisor = new BABYLON.Vector3(valence, valence, valence);
+
+                facePtAvg = facePtAvg.divide(divisor);
+                faceNorAvg = faceNorAvg.divide(divisor);
+                midPtAvg = midPtAvg.divide(divisor);
+                midNorAvg = midNorAvg.divide(divisor);
+
+                mesh.Vertices[i].Coordinates.x = ((valence-3)*mesh.Vertices[i].Coordinates.x / valence) +
+                                                 (2*midPtAvg.x / (valence)) + (facePtAvg.x / valence);
+                mesh.Vertices[i].Coordinates.y = ((valence-3)*mesh.Vertices[i].Coordinates.y / valence) +
+                                                 (2*midPtAvg.y / (valence)) + (facePtAvg.y / valence);
+                mesh.Vertices[i].Coordinates.z = ((valence-3)*mesh.Vertices[i].Coordinates.z / valence) +
+                                                 (2*midPtAvg.z / (valence)) + (facePtAvg.z / valence);
+                mesh.Vertices[i].Normal.x = ((valence-3)*mesh.Vertices[i].Normal.x / valence) +
+                                                 (2*midNorAvg.x / (valence)) + (faceNorAvg.x / valence);
+                mesh.Vertices[i].Normal.y = ((valence-3)*mesh.Vertices[i].Normal.y / valence) +
+                                                 (2*midNorAvg.y / (valence)) + (faceNorAvg.y / valence);
+                mesh.Vertices[i].Normal.z = ((valence-3)*mesh.Vertices[i].Normal.z / valence) +
+                                                 (2*midNorAvg.z / (valence)) + (faceNorAvg.z / valence);
             }
+            for (var i = 0; i < mesh.Vertices.length; i++) {
+                var temp = mesh.Vertices[i].Coordinates;
+                temp.x = Math.round(temp.x * temp01) / temp01;
+                temp.y = Math.round(temp.y * temp01) / temp01;
+                temp.z = Math.round(temp.z * temp01) / temp01;
+            }
+            this.digits--;
             // sup with this ^^ ?
             var facept;
             var faceptIdx, midpt1Idx, midpt2Idx;
@@ -461,55 +480,64 @@ var SoftEngine;
                                                                             facept.Normal.y,
                                                                             facept.Normal.z)};
                 }
-                midpt1Idx = mesh.Vertices.length;
+                midpt1Idx = vectorIndexOf(midPoints[i], mesh.Vertices);
+                if(midpt1Idx == -1)
+                    midpt1Idx = mesh.Vertices.length;
                 mesh.Vertices[midpt1Idx] = {Coordinates: new BABYLON.Vector3(midPoints[i].Coordinates.x,
                                                                              midPoints[i].Coordinates.y,
                                                                              midPoints[i].Coordinates.z),
                                                 Normal: new BABYLON.Vector3(midPoints[i].Normal.x,
                                                                              midPoints[i].Normal.y,
                                                                              midPoints[i].Normal.z)};
-                midpt2Idx = mesh.Vertices.length;
+                midpt2Idx = vectorIndexOf(midPoints[mesh.halfEdges[i].prev], mesh.Vertices)
+                if(midpt2Idx == -1)
+                    midpt2Idx = mesh.Vertices.length;
                 mesh.Vertices[midpt2Idx] = {Coordinates: new BABYLON.Vector3(midPoints[mesh.halfEdges[i].prev].Coordinates.x,
                                                                             midPoints[mesh.halfEdges[i].prev].Coordinates.y,
                                                                             midPoints[mesh.halfEdges[i].prev].Coordinates.z),
                                                 Normal: new BABYLON.Vector3(midPoints[mesh.halfEdges[i].prev].Normal.x,
                                                                             midPoints[mesh.halfEdges[i].prev].Normal.y,
-                                                                            midPoints[mesh.halfEdges[i].prev].Normal.z)};
+                                                                            midPoints[mesh.halfEdges[i].prev].Normal.z)};                                                      
                 newFaces.push({A: faceptIdx, B: midpt1Idx, C: midpt2Idx, D: mesh.halfEdges[i].vert});
-                
 
+                var indices = [];
                 newHalfEdges.push({
-                    vert: faceptIdx,
-                    prev: i+3,
-                    next: i+1,
+                    vert: mesh.halfEdges[i].vert,
+                    prev: i*4+3,
+                    next: i*4+1,
                     pair: null,
-                    left: newFaces.length
+                    left: i
                 });
-                newHalfEdges.push({
-                    vert: midpt2Idx,
-                    prev: i,
-                    next: i+2,
-                    pair: null,
-                    left: newFaces.length
-                });
-                newHalfEdges.push({
-                    vert: i.vert,
-                    prev: i+1,
-                    next: i+3,
-                    pair: null,
-                    left: newFaces.length
-                });
+                indices[0] = newHalfEdges.length - 1;
                 newHalfEdges.push({
                     vert: midpt1Idx,
-                    prev: i+2,
-                    next: i,
+                    prev: i*4,
+                    next: i*4+2,
                     pair: null,
-                    left: newFaces.length
+                    left: i
                 });
-                //mesh.halfEdges = mesh.halfEdges.concat(newHalfEdges);
+                indices[1] = newHalfEdges.length - 1;
+                newHalfEdges.push({
+                    vert: faceptIdx,
+                    prev: i*4+1,
+                    next: i*4+3,
+                    pair: null,
+                    left: i
+                });
+                indices[2] = newHalfEdges.length - 1;
+                newHalfEdges.push({
+                    vert: midpt2Idx,
+                    prev: i*4+2,
+                    next: i*4,
+                    pair: null,
+                    left: i
+                });
+                indices[3] = newHalfEdges.length - 1;
+                // console.log(newHalfEdges[indices[0]].vert);
+                
+
             }  
             mesh.halfEdges = newHalfEdges;
-            
             for(var i = 0; i < mesh.halfEdges.length; i++) 
             {
                 for(var j = 0; j < mesh.halfEdges.length; j++) 
@@ -520,9 +548,33 @@ var SoftEngine;
                         mesh.halfEdges[i].pair = j;
                     }
                 }
-            }
-            debug(mesh.halfEdges);
+                //if (mesh.halfEdges[i].vert === 106) console.log("here", mesh.halfEdges[i]);
+            } 
             mesh.Faces = newFaces;
+            
+        }
+        function equalVerts(vert1, vert2)
+        {
+            var keys = Object.keys(vert1);
+            for(var i = 0, iter = keys.length; i < iter; i++) 
+            {
+                if(vert1[keys[i]] != vert2[keys[i]]) 
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        function vectorIndexOf(vect, array) 
+        {
+            for (var i = 0; i < array.length; i++) 
+            {
+                if (vect.Coordinates.equals(array[i].Coordinates)) 
+                {
+                    return i;
+                }
+            }
+            return -1;
         }
         Device.prototype.render = function (camera, meshes, mode) {
             var viewMatrix = BABYLON.Matrix.LookAtLH(camera.Position, camera.Target, BABYLON.Vector3.Up());
@@ -550,7 +602,7 @@ var SoftEngine;
                         this.drawBline(pixelB, pixelD);
                         this.drawBline(pixelC, pixelD);
                     } else {
-                        var color = 0.25 + ((indexFaces % cMesh.Faces.length) / cMesh.Faces.length) *0.75;
+                        var color = 0.5//0.25 + ((indexFaces % cMesh.Faces.length) / cMesh.Faces.length) *0.75;
                         //var color = 1;
                         this.drawQuad(pixelA, pixelB, pixelC, pixelD, new BABYLON.Color4(color, color, color, 1));
                     }
