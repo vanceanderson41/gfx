@@ -73,7 +73,7 @@
 			scene.add(sphere);
 
 			
-			reflectCamera = new THREE.CubeCamera(0.1, 5000, 512);
+			reflectCamera = new THREE.CubeCamera(0.1, 5000, 300);
 			scene.add(reflectCamera);
 			g = new THREE.CubeGeometry(300, 0.2, 300);
 			m = new THREE.MeshBasicMaterial({envMap: reflectCamera.renderTarget});
@@ -85,11 +85,9 @@
 			ground.receiveShadow = true;
 			scene.add(ground);
 
-			reflectCamera.position = ground.position -1;
+			reflectCamera.position = ground.position;
 			reflectCamera.position.x -= 10;
-			reflectCamera.lookAt(new THREE.Vector3(0,1,0));
-			
-
+			reflectCamera.lookAt(new THREE.Vector3(0,30,0));			
 
 			console.log(objects);
 			
@@ -142,19 +140,18 @@
 				}
 			}
 
+			var shwadowCamera = true;
 			function aaToggle() {
-				// renderer.antialias = true;
-				// renderer.shadowMapType = THREE.PCFSoftShadowMap;
-				// renderer.shadowMapSoft = true;
-				// renderer.shadowMapCascade = true;
-				// light1.shadowCamera.updateProjectionMatrix();
-				// light2.shadowCamera.updateProjectionMatrix();
-				// // renderer.update();
-				// for(var i in objects) {
-				// 	objects[i].material.needsUpdate = true;
-				// }
-				// material.needsUpdate = true;
-				// renderer.shadowMapType = THREE.BasicSoftShadowMap;
+				if(shwadowCamera == true) {
+					shadowCamera = false;
+					light1.shadowCameraVisible = false;
+					light2.shadowCameraVisible = false;
+				}
+				else {
+					shadowCamera = true;
+					light1.shadowCameraVisible = true;
+					light2.shadowCameraVisible = true;
+				}
 			}
 
 			function pause() {
@@ -169,7 +166,7 @@
 		2) <input type="button" onclick="receiveShadowToggle()" value="Receives Shadows Toggle"></input>
 		<input type="button" onclick="castShadowToggle()" value="Cast Shadows Toggle"></input>
 		<br/>
-		3) <input type="button" onclick="aaToggle()" value="AA Toggle" disabled="true"></input>
+		3) <input type="button" onclick="aaToggle()" value="Shadow Camera Toggle"></input>
 		<br/><br/>
 		<input type="button" onclick="pause()" value="Pause"></input>
 	</body>
