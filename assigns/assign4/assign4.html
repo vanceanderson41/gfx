@@ -10,39 +10,25 @@
 		<script src="three.js"></script>
 		<script src="three.min.js"></script>
 		<script src="OrbitControls.js"></script>
+		<script src="RaytracingRenderer.js"></script>
 		<script>
 			var objects = [];
 			var motionBool = true;
 			var dummyObject = new THREE.Object3D();
 			var scene = new THREE.Scene();
 			var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-			var renderer = new THREE.WebGLRenderer();
+			var renderer = new THREE.RaytracingRenderer();
+			renderer.setClearColor( 0xf0f0f0 );
 			renderer.setSize(640, 480); 
+			
 			document.body.appendChild(renderer.domElement);
 			camera.position.z = 100;
 			var controls = new THREE.OrbitControls(camera);
-			renderer.shadowMapEnabled = true;
-			renderer.shadowMapType = THREE.PCFSoftShadowMap;
-			renderer.shadowMapAutoUpdate = true;
-			renderer.shadowCameraNear = 0.01;
-			renderer.shadowCameraFar = camera.far;
-			renderer.shadowMapWidth = 128;
-			renderer.shadowMapHeight = 128;
 			
 
 			var light1 = new THREE.SpotLight(0xffffff, 0.5);
 			light1.position.set(100,100,0);
-			light1.castShadow = true;
-			light1.shadowDarkness = 1;
-			light1.shadowCameraVisible = true;
 			scene.add(light1);
-
-			var light2 = new THREE.SpotLight(0xffffff, 0.5);
-			light2.position.set(-200,100,0);
-			light2.castShadow = true;
-			light2.shadowDarkness = 1;
-			light2.shadowCameraVisible = true;
-			scene.add(light2);
 
 			var g = new THREE.SphereGeometry(5, 32, 32);
 			var m = new THREE.MeshLambertMaterial({color: 0x00ff00});
@@ -90,10 +76,13 @@
 				scene.add(dummyObject);
 			}
 			render();
+			render();
 			function render() {
 				motion();
 				controls.update();
-				requestAnimationFrame(render);
+				// requestAnimationFrame(render);
+				// if(dummyObject.rotation.y >= 3)
+				// 	requestAnimationFrame(render);
 				renderer.render(scene, camera);
 			}
 
@@ -101,6 +90,7 @@
 				if(motionBool) {
 					for(var i in objects) {
 						dummyObject.rotation.y += 0.01;
+						console.log(dummyObject.rotation.y);
 					}
 				}
 			}
@@ -131,21 +121,6 @@
 				}
 			}
 
-			function aaToggle() {
-				// renderer.antialias = true;
-				// renderer.shadowMapType = THREE.PCFSoftShadowMap;
-				// renderer.shadowMapSoft = true;
-				// renderer.shadowMapCascade = true;
-				// light1.shadowCamera.updateProjectionMatrix();
-				// light2.shadowCamera.updateProjectionMatrix();
-				// // renderer.update();
-				// for(var i in objects) {
-				// 	objects[i].material.needsUpdate = true;
-				// }
-				// material.needsUpdate = true;
-				// renderer.shadowMapType = THREE.BasicSoftShadowMap;
-			}
-
 			function pause() {
 				if(motionBool == true)
 					motionBool = false;
@@ -154,12 +129,7 @@
 			}
 
 		</script>
-		<br/>Percentage Close Filtering<br/>
-		2) <input type="button" onclick="receiveShadowToggle()" value="Receives Shadows Toggle"></input>
-		<input type="button" onclick="castShadowToggle()" value="Cast Shadows Toggle"></input>
 		<br/>
-		3) <input type="button" onclick="aaToggle()" value="AA Toggle" disabled="true"></input>
-		<br/><br/>
 		<input type="button" onclick="pause()" value="Pause"></input>
 	</body>
 </html>

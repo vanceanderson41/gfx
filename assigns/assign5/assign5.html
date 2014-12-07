@@ -16,6 +16,7 @@
 			var dummyObject = new THREE.Object3D();
 			var scene = new THREE.Scene();
 			var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+			var reflectCamera;
 			var renderer = new THREE.WebGLRenderer();
 			renderer.setSize(640, 480); 
 			document.body.appendChild(renderer.domElement);
@@ -29,6 +30,8 @@
 			renderer.shadowMapWidth = 128;
 			renderer.shadowMapHeight = 128;
 			
+			var light = new THREE.AmbientLight( 0x404040 ); // soft white light
+			scene.add( light );
 
 			var light1 = new THREE.SpotLight(0xffffff, 0.5);
 			light1.position.set(100,100,0);
@@ -69,20 +72,25 @@
 			objects.push(sphere);
 			scene.add(sphere);
 
+			
+			reflectCamera = new THREE.CubeCamera(0.1, 5000, 512);
+			scene.add(reflectCamera);
 			g = new THREE.CubeGeometry(300, 0.2, 300);
-			m = new THREE.MeshPhongMaterial({
-				ambient		: 0x444444,
-				color		: 0x8f7a70,
-				shininess	: 150, 
-				specular	: 0x888888,
-				shading		: THREE.SmoothShading
-			});
+			m = new THREE.MeshBasicMaterial({envMap: reflectCamera.renderTarget});
+
+
 			var ground = new THREE.Mesh(g, m);
 			
 			ground.position.y = -25;
 			ground.receiveShadow = true;
 			scene.add(ground);
+
+			reflectCamera.position = ground.position -1;
+			reflectCamera.position.x -= 10;
+			reflectCamera.lookAt(new THREE.Vector3(0,1,0));
 			
+
+
 			console.log(objects);
 			
 			for(var i in objects) {
@@ -91,6 +99,9 @@
 			}
 			render();
 			function render() {
+				ground.visible = false;
+				reflectCamera.updateCubeMap(renderer, scene);
+				ground.visible = true;
 				motion();
 				controls.update();
 				requestAnimationFrame(render);
