@@ -17,6 +17,7 @@
 			var scene = new THREE.Scene();
 			var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
 			var reflectCamera;
+			var blueCamera;
 			var renderer = new THREE.WebGLRenderer();
 			renderer.setSize(640, 480); 
 			document.body.appendChild(renderer.domElement);
@@ -31,7 +32,7 @@
 			renderer.shadowMapHeight = 128;
 			
 			var light = new THREE.AmbientLight( 0x404040 ); // soft white light
-			scene.add( light );
+			// scene.add( light );
 
 			var light1 = new THREE.SpotLight(0xffffff, 0.5);
 			light1.position.set(100,100,0);
@@ -47,7 +48,7 @@
 			light2.shadowCameraVisible = true;
 			scene.add(light2);
 
-			var g = new THREE.SphereGeometry(5, 32, 32);
+			var g = new THREE.SphereGeometry(15, 32, 32);
 			var m = new THREE.MeshLambertMaterial({color: 0x00ff00});
 			
 			var sphere = new THREE.Mesh(g, m);
@@ -65,12 +66,13 @@
 			objects.push(sphere);
 			scene.add(sphere);
 
-			m = new THREE.MeshPhongMaterial({color: 0x0000ff, reflectivity: 1000});
-			sphere = new THREE.Mesh(g, m);
-			sphere.castShadow = true;
-			sphere.position.x = -30;
-			objects.push(sphere);
-			scene.add(sphere);
+			blueCamera = new THREE.CubeCamera(0.1, 5000, 300);
+			m = new THREE.MeshBasicMaterial({envMap: blueCamera.renderTarget});
+			blue = new THREE.Mesh(g, m);
+			blue.castShadow = true;
+			blue.position.x = -30;
+			objects.push(blue);
+			scene.add(blue);
 
 			
 			reflectCamera = new THREE.CubeCamera(0.1, 5000, 300);
@@ -100,6 +102,11 @@
 				ground.visible = false;
 				reflectCamera.updateCubeMap(renderer, scene);
 				ground.visible = true;
+
+				blue.visible = false;
+				blueCamera.updateCubeMap(renderer, scene);
+				blue.visible = true;
+
 				motion();
 				controls.update();
 				requestAnimationFrame(render);
