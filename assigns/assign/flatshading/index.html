@@ -1,0 +1,30 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Flat Shading</title>
+    <style>
+        canvas {
+            width: 400px;
+            height: 400px;
+        }
+    </style>
+    <script src="../babylon.math.js"></script>
+    <script src="SoftEngine.js"></script>
+    <script src="main.js"></script>
+</head>
+<body>
+    <canvas id="frontBuffer" width="400" height="400" style="background-color: black;"></canvas>
+    <br/>
+    <input type=button onClick="location.href='../wireframe/index.html'" value='Wireframe'>
+    <input type=button onClick="location.href='../zbuffer/index.html'" value='Z-Buffer'>
+    <input type=button onClick="location.href='../flatshading/index.html'" value='Flat Shading'>
+    <input type=button onClick="location.href='../garoudshading/index.html'" value='Garoud Shading'>
+    <input type=button onClick="location.href='../phongshading/index.html'" value='Phong Shading'>
+    <br/>
+
+    Current FPS: <span id="currentFPS"></span>
+    Average FPS: <span id="averageFPS"></span>
+
+
+</body>
+</html>
